@@ -8,7 +8,7 @@ from typing import List
 from app.config import settings
 
 logger = logging.getLogger(__name__)
-GRAPH_API_BASE = "https://graph.facebook.com/v21.0"
+GRAPH_API_BASE = "https://graph.instagram.com/v21.0"
 
 
 async def send_action(recipient_id: str, action: str = "typing_on"):
