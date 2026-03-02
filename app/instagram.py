@@ -12,40 +12,42 @@ GRAPH_API_BASE = "https://graph.facebook.com/v21.0"
 
 
 async def send_action(recipient_id: str, action: str = "typing_on"):
-    url = f"{GRAPH_API_BASE}/me/messages"
+    url = f"{GRAPH_API_BASE}/{settings.INSTAGRAM_PAGE_ID}/messages"
     payload = {"recipient": {"id": recipient_id}, "sender_action": action}
-    headers = {"Authorization": f"Bearer {settings.INSTAGRAM_ACCESS_TOKEN}"}
+    params = {"access_token": settings.INSTAGRAM_ACCESS_TOKEN}
     try:
         async with httpx.AsyncClient(timeout=10.0) as c:
-            (await c.post(url, json=payload, headers=headers)).raise_for_status()
+            (await c.post(url, json=payload, params=params)).raise_for_status()
     except Exception as e:
         logger.warning(f"⚠️ sender_action failed: {e}")
 
 
 async def send_message(recipient_id: str, text: str) -> dict:
-    url = f"{GRAPH_API_BASE}/me/messages"
+    url = f"{GRAPH_API_BASE}/{settings.INSTAGRAM_PAGE_ID}/messages"
     payload = {"recipient": {"id": recipient_id}, "message": {"text": text}}
-    headers = {"Authorization": f"Bearer {settings.INSTAGRAM_ACCESS_TOKEN}"}
+    params = {"access_token": settings.INSTAGRAM_ACCESS_TOKEN}
     async with httpx.AsyncClient(timeout=15.0) as c:
-        resp = await c.post(url, json=payload, headers=headers)
+        resp = await c.post(url, json=payload, params=params)
+        if not resp.is_success:
+            logger.error(f"❌ Send failed {resp.status_code}: {resp.text[:200]}")
         resp.raise_for_status()
         logger.info(f"✅ Sent: {text[:60]}")
         return resp.json()
 
 
 async def send_split_messages(recipient_id: str, messages: List[str]):
-    """Send messages with realistic 5-9 second typing delays"""
+    """Send messages with realistic typing delays"""
     for i, msg in enumerate(messages):
         if not msg.strip():
             continue
         await send_action(recipient_id, "typing_on")
-        delay = random.uniform(5, 9)
+        delay = random.uniform(3, 6)
         logger.info(f"⏳ {delay:.1f}s before msg {i+1}/{len(messages)}")
         await asyncio.sleep(delay)
         await send_action(recipient_id, "typing_off")
         await send_message(recipient_id, msg)
         if i < len(messages) - 1:
-            await asyncio.sleep(1.2)
+            await asyncio.sleep(0.8)
 
 
 def verify_webhook_signature(body: bytes, signature: str) -> bool:
