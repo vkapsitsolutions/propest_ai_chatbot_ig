@@ -132,9 +132,7 @@ async def handle_dm(sender_id: str, text: str):
 
 @app.get("/leads")
 async def get_leads():
-    leads = list(db.leads_col.find({}, {"_id": 0}).sort("created_at", -1).limit(50))
-    for l in leads:
-        if "created_at" in l: l["created_at"] = l["created_at"].isoformat()
+    leads = db.get_all_leads()
     return {"total": len(leads), "leads": leads}
 
 
@@ -152,5 +150,5 @@ async def get_session(instagram_id: str):
 
 @app.delete("/session/{instagram_id}")
 async def reset_session(instagram_id: str):
-    db.sessions_col.delete_one({"instagram_id": instagram_id})
+    db.delete_session(instagram_id)
     return {"status": "deleted"}
