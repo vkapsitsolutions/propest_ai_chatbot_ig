@@ -29,10 +29,14 @@ print("=" * 55)
 print()
 
 FLOW = [
-    ("VETVERLIES",                                              10),
-    ("Ik sport niet echt. Ik wil 8 kilo afvallen maar het lukt niet.", 18),
-    ("Al 2 jaar. Voeding is mijn grootste probleem.",           18),
-    ("Ik ben er klaar mee. Ik wil nu echt iets veranderen.",   18),
+    ("VETVERLIES",
+     10),
+    ("Ja ik train soms maar eigenlijk merk ik dat ik het heel moeilijk vol hou. Dan eet ik ook gelijk slecht als ik een dag mis. En dan zie ik gewoon niks",
+     20),
+    ("Al minstens 2 jaar zo. Ik weet ook niet precies wat ik fout doe, 's avonds eet ik teveel denk ik en dan geef ik het gewoon op",
+     20),
+    ("Ik ben het echt zat. Ik wil gewoon een keer resultaat zien. Voor mijn gevoel heb ik het al jaren geprobeerd. Nu of nooit",
+     20),
 ]
 
 bot_count = 0

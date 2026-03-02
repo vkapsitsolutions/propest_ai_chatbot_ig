@@ -91,7 +91,15 @@ async def get_ai_response(instagram_id: str, user_message: str, session: dict) -
         filled = {k: v for k, v in collected.items() if v}
         missing = [k for k, v in collected.items() if not v]
 
-        state = f"STATUS: stage={stage} intent={intent}\nVerzameld: {filled or 'niets'}\nNodig: {missing or 'alles!'}\nFocus op ontbrekende velden — ÉÉN per bericht."
+        # Don't tell AI which fields to fill - let it flow naturally
+        state = f"""GESPREKSSTATUS: intent={intent} | stage={stage}
+Wat je al weet: {filled if filled else 'nog niets'}
+
+REGEL: Reageer op WAT de user net zei — niet op welke velden nog missen.
+Voel je vrij om te reageren op de emotie, het verhaal, de situatie.
+De kwalificatie-info zal organisch naar voren komen.
+Stel NOOIT een vraag die direct naar een missing field vraagt (bijv. nooit: "Hoe gemotiveerd ben je?").
+In plaats daarvan: reageer op iets specifieks wat ze zeiden en stel een logische follow-up."""
 
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT + "\n\n" + FORMAT},
@@ -104,7 +112,7 @@ async def get_ai_response(instagram_id: str, user_message: str, session: dict) -
 
         resp = await client.chat.completions.create(
             model=settings.OPENAI_MODEL, messages=messages,
-            max_tokens=400, temperature=0.8,
+            max_tokens=400, temperature=0.9,
             response_format={"type": "json_object"}
         )
         return _validate(json.loads(resp.choices[0].message.content))
