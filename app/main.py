@@ -64,6 +64,18 @@ async def process_webhook_payload(body: dict):
             return
         for entry in body.get("entry", []):
             page_id = entry.get("id", "")
+
+            # ── Format 1: Instagram 'changes' format (actual DM webhooks) ──
+            for change in entry.get("changes", []):
+                if change.get("field") == "messages":
+                    val = change.get("value", {})
+                    sender_id = val.get("sender", {}).get("id")
+                    recipient_id = val.get("recipient", {}).get("id")
+                    text = val.get("message", {}).get("text", "").strip()
+                    if sender_id and sender_id != recipient_id and text:
+                        await handle_dm(sender_id, text)
+
+            # ── Format 2: Messenger-style 'messaging' format (fallback) ──
             for event in entry.get("messaging", []):
                 sender_id = event.get("sender", {}).get("id")
                 if sender_id == page_id or "delivery" in event or "read" in event:
@@ -71,8 +83,10 @@ async def process_webhook_payload(body: dict):
                 text = event.get("message", {}).get("text", "").strip()
                 if sender_id and text:
                     await handle_dm(sender_id, text)
+
     except Exception as e:
         logger.error(f"❌ Payload error: {e}")
+
 
 
 async def handle_dm(sender_id: str, text: str):
